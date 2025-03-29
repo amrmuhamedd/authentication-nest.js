@@ -6,10 +6,15 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserRepository } from './repository/user.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Session, SessionSchema } from './entities/sessions.entity';
+import { SessionsRepository } from './repository/sessions.repository';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Session.name, schema: SessionSchema },
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -20,6 +25,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     }),
   ],
   controllers: [AuthenticationController],
-  providers: [AuthenticationService, UserRepository],
+  providers: [AuthenticationService, UserRepository, SessionsRepository],
 })
 export class AuthenticationModule {}

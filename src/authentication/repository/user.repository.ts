@@ -13,7 +13,7 @@ export class UserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userModel.findOne({ email }).exec();
+    return this.userModel.findOne({ email }).exec()
   }
 
   async findById(id: string): Promise<User | null> {

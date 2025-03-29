@@ -8,16 +8,19 @@ import { User } from './entities/users.entity';
 import {
   BadRequestException,
   InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
+import { SessionsRepository } from './repository/sessions.repository';
 
 describe('AuthenticationService', () => {
   let service: AuthenticationService;
   let userRepository: jest.Mocked<UserRepository>;
+  let sessionRepository: jest.Mocked<SessionsRepository>;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         JwtModule.register({
-          secret: 'test-secret', // Provide a mock secret for testing
+          secret: 'test-secret',
           signOptions: { expiresIn: '1h' },
         }),
       ],
@@ -31,17 +34,26 @@ describe('AuthenticationService', () => {
           },
         },
         {
+          provide: SessionsRepository,
+          useValue: {
+            create: jest.fn(),
+            deleteExpiredSessions: jest.fn(),
+            deleteByUserId: jest.fn(),
+          },
+        },
+        {
           provide: JwtService,
           useValue: {
-            sign: jest.fn(() => 'mocked-jwt-token'), 
+            sign: jest.fn(() => 'mocked-jwt-token'),
           },
-        }
+        },
       ],
       exports: [AuthenticationService],
     }).compile();
 
     service = module.get<AuthenticationService>(AuthenticationService);
     userRepository = module.get(UserRepository);
+    sessionRepository = module.get(SessionsRepository);
   });
 
   it('should be defined', () => {
@@ -63,7 +75,7 @@ describe('AuthenticationService', () => {
         email: mockRegisterDto.email,
         password: await bcrypt.hash(mockRegisterDto.password, 12),
       } as User);
-      
+
       const result = await service.register(mockRegisterDto);
 
       expect(userRepository.findByEmail).toHaveBeenCalledWith(
@@ -102,6 +114,52 @@ describe('AuthenticationService', () => {
       await expect(service.register(mockRegisterDto)).rejects.toThrow(
         InternalServerErrorException,
       );
+    });
+  });
+
+  describe('login', () => {
+    const mockUser: User = {
+      _id: '12345',
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: '$2b$12$hashedpassword',
+    } as User;
+
+    it('should login user and return JWT token', async () => {
+      jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+      jest
+        .spyOn(sessionRepository, 'create')
+        .mockResolvedValue({
+          token: 'mocked-jwt-token',
+          user: mockUser,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      const result = await service.login({
+        email: mockUser.email,
+        password: 'P@ssword123',
+      });
+
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(mockUser.email);
+      expect(result).toEqual({ access_token: 'mocked-jwt-token' });
+    });
+
+    it('should throw UnauthorizedException if user is not found', async () => {
+      jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(null);
+
+      await expect(
+        service.login({ email: mockUser.email, password: 'P@ssword123' }),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException if password is incorrect', async () => {
+      jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
+      jest.spyOn(bcrypt, 'compare').mockResolvedValue(false);
+
+      await expect(
+        service.login({ email: mockUser.email, password: 'wrongpassword' }),
+      ).rejects.toThrow(UnauthorizedException);
     });
   });
 });
