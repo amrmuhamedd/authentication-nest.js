@@ -19,7 +19,7 @@ export class UserRepository {
   }
 
   async findById(id: string): Promise<User | null> {
-    return this.userModel.findById(id).exec();
+    return this.userModel.findById(id).select('-password').exec();
   }
 
   async update(id: string, updateData: Partial<User>): Promise<User | null> {

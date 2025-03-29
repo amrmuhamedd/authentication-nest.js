@@ -26,6 +26,15 @@ export class AuthenticationService {
     private readonly sessionRepository: SessionsRepository,
   ) {}
 
+
+  async getUserInfo(userId: string){
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    return user;
+  }
+
   async login(loginData: LoginDto) {
     const { email, password } = loginData;
 

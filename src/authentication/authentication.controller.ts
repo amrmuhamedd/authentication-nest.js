@@ -1,9 +1,12 @@
-import { Controller, Post, Body, HttpCode } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, UseGuards } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { RegisterDto } from './dto/register.dto';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
+import { LoggedInUser } from './decorators/get-current-user';
+import { User } from './entities/users.entity';
+import { JwtAuthGuard } from './guards/jwtauth.guard';
 
 @Controller('auth')
 export class AuthenticationController {
@@ -51,5 +54,15 @@ export class AuthenticationController {
   @ApiResponse({ status: 404, description: 'user is not logged in.' })
   async logout(@Body() body: RefreshDto) {
     return this.authenticationService.logout(body.refresh_token);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post('/me')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'logout' })
+  @ApiResponse({ status: 404, description: 'user is not logged in.' })
+  async getUserInfo(@LoggedInUser() user: Partial<User>) {
+    return this.authenticationService.getUserInfo(user.id);
   }
 }
