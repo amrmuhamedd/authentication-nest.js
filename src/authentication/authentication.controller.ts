@@ -1,20 +1,8 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UseGuards,
-  HttpCode,
-} from '@nestjs/common';
+import { Controller, Post, Body, HttpCode } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { RegisterDto } from './dto/register.dto';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from './guards/jwtauth.guard';
-import { LoggedInUser } from './decorators/get-current-user';
 import { RefreshDto } from './dto/refresh.dto';
 
 @Controller('auth')
@@ -53,8 +41,8 @@ export class AuthenticationController {
   })
   @ApiResponse({ status: 400, description: 'Invalid refresh token.' })
   @ApiResponse({ status: 404, description: 'user is not logged in.' })
-  async refresh(@Body() body: RefreshDto, @LoggedInUser() user: any) {
-    return this.authenticationService.refreshToken(user.id, body.refresh_token);
+  async refresh(@Body() body: RefreshDto) {
+    return this.authenticationService.refreshToken(body.refresh_token);
   }
 
   @Post('/logout')

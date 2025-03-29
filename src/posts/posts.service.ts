@@ -10,7 +10,7 @@ export class PostsService {
         'Closures allow functions to remember the scope in which they were created...',
       author: 'John Doe',
       createdAt: '2025-03-29T12:00:00Z',
-    }
+    },
   ];
 
   findAll() {
