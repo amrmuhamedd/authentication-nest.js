@@ -8,9 +8,12 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Session, SessionSchema } from './entities/sessions.entity';
 import { SessionsRepository } from './repository/sessions.repository';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategy/jwt.stratgy';
 
 @Module({
   imports: [
+    PassportModule,
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Session.name, schema: SessionSchema },
@@ -25,6 +28,11 @@ import { SessionsRepository } from './repository/sessions.repository';
     }),
   ],
   controllers: [AuthenticationController],
-  providers: [AuthenticationService, UserRepository, SessionsRepository],
+  providers: [
+    AuthenticationService,
+    JwtStrategy,
+    UserRepository,
+    SessionsRepository,
+  ],
 })
 export class AuthenticationModule {}

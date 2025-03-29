@@ -5,7 +5,9 @@ import { User, UsersDocument } from '../entities/users.entity';
 
 @Injectable()
 export class UserRepository {
-  constructor(@InjectModel(User.name) private readonly userModel: Model<UsersDocument>) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<UsersDocument>,
+  ) {}
 
   async create(user: Partial<User>): Promise<User> {
     const newUser = new this.userModel(user);
@@ -13,7 +15,7 @@ export class UserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.userModel.findOne({ email }).exec()
+    return this.userModel.findOne({ email }).exec();
   }
 
   async findById(id: string): Promise<User | null> {
@@ -21,7 +23,9 @@ export class UserRepository {
   }
 
   async update(id: string, updateData: Partial<User>): Promise<User | null> {
-    return this.userModel.findByIdAndUpdate(id, updateData, { new: true }).exec();
+    return this.userModel
+      .findByIdAndUpdate(id, updateData, { new: true })
+      .exec();
   }
 
   async delete(id: string): Promise<void> {

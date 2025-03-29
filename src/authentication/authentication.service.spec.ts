@@ -11,6 +11,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { SessionsRepository } from './repository/sessions.repository';
+import { ConfigModule } from '@nestjs/config';
 
 describe('AuthenticationService', () => {
   let service: AuthenticationService;
@@ -23,6 +24,7 @@ describe('AuthenticationService', () => {
           secret: 'test-secret',
           signOptions: { expiresIn: '1h' },
         }),
+        ConfigModule,
       ],
       providers: [
         AuthenticationService,
@@ -88,7 +90,10 @@ describe('AuthenticationService', () => {
         }),
       );
 
-      expect(result).toEqual({ access_token: 'mocked-jwt-token' });
+      expect(result).toEqual({
+        access_token: 'mocked-jwt-token',
+        refresh_token: 'mocked-jwt-token',
+      });
     });
 
     it('should throw BadRequestException if user already exists', async () => {
@@ -128,21 +133,22 @@ describe('AuthenticationService', () => {
     it('should login user and return JWT token', async () => {
       jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
       jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
-      jest
-        .spyOn(sessionRepository, 'create')
-        .mockResolvedValue({
-          token: 'mocked-jwt-token',
-          user: mockUser,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
+      jest.spyOn(sessionRepository, 'create').mockResolvedValue({
+        token: 'mocked-jwt-token',
+        user: mockUser,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
       const result = await service.login({
         email: mockUser.email,
         password: 'P@ssword123',
       });
 
       expect(userRepository.findByEmail).toHaveBeenCalledWith(mockUser.email);
-      expect(result).toEqual({ access_token: 'mocked-jwt-token' });
+      expect(result).toEqual({
+        access_token: 'mocked-jwt-token',
+        refresh_token: 'mocked-jwt-token',
+      });
     });
 
     it('should throw UnauthorizedException if user is not found', async () => {

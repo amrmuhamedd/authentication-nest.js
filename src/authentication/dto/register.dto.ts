@@ -7,18 +7,26 @@ export class RegisterDto {
   @MinLength(3)
   name: string;
 
-  @ApiProperty({ 
-    description: 'User password (must contain at least one letter, one number, and one special character)', 
-    minLength: 8 
+  @ApiProperty({
+    description:
+      'User password (must contain at least one letter, one number, and one special character)',
+    minLength: 8,
   })
   @IsNotEmpty()
   @MinLength(8)
-  @Matches(/[A-Za-z]/, { message: 'Password must contain at least one letter.' })
+  @Matches(/[A-Za-z]/, {
+    message: 'Password must contain at least one letter.',
+  })
   @Matches(/\d/, { message: 'Password must contain at least one number.' })
-  @Matches(/[!@#$%^&*(),.?":{}|<>]/, { message: 'Password must contain at least one special character.' })
+  @Matches(/[!@#$%^&*(),.?":{}|<>]/, {
+    message: 'Password must contain at least one special character.',
+  })
   password: string;
 
-  @ApiProperty({ description: 'User email address', example: 'user@example.com' })
+  @ApiProperty({
+    description: 'User email address',
+    example: 'user@example.com',
+  })
   @IsNotEmpty()
   @IsEmail()
   email: string;

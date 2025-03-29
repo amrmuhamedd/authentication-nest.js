@@ -3,8 +3,7 @@ import { Document, Types } from 'mongoose';
 export type UsersDocument = User & Document & { _id: Types.ObjectId };
 
 @Schema({ timestamps: true, _id: true })
-export class User extends Document{
-          
+export class User extends Document {
   @Prop({
     required: true,
     minlength: 3,
